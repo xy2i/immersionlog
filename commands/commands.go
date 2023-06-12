@@ -13,12 +13,39 @@ var (
 			// of the command.
 			Description: "Basic command",
 		},
+		{
+			Name:        "log",
+			Description: "You can use vndb Ids and titles for VN",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:         "mediatype",
+					Description:  "mediatype",
+					Type:         discordgo.ApplicationCommandOptionString,
+					Required:     true,
+					Autocomplete: true,
+				},
+				{
+					Name:         "amount",
+					Description:  "time in minutes",
+					Type:         discordgo.ApplicationCommandOptionNumber,
+					Required:     true,
+					Autocomplete: false,
+				},
+				{
+					Name:         "name",
+					Description:  "For VNs you can use the title or the vndb ID, for books BLAH BLAH BLAH",
+					Type:         discordgo.ApplicationCommandOptionString,
+					Required:     true,
+					Autocomplete: true,
+				},
+			},
+		},
 	}
 
 	// a map with the name of the command as the key and the
 	// function that handles that command as the value.
 	CommandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 		"basic-command": handleBasicCommand,
-		"false-command": handleBasicCommand,
+		"log":           handleLogCommand,
 	}
 )

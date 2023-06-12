@@ -1,48 +1,58 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
-	"strings"
+
+	"github.com/xy2i/immersionlog/commands"
 
 	"github.com/bwmarrin/discordgo"
 )
 
+// Bot parameters
 var botToken string
+var guildID string
 
-//const guildId string
+var s *discordgo.Session
 
-func main() {
-	dg, err := discordgo.New("Bot " + botToken)
+func init() {
+	var err error
+	s, err = discordgo.New("Bot " + botToken)
 	if err != nil {
-		fmt.Println("error starting Discord session", err)
-		return
+		log.Fatalf("Invalid bot parameters: %v", err)
 	}
-	dg.AddHandler(messageCreate)
-	err = dg.Open()
-	if err != nil {
-		fmt.Println("error opening connection,", err)
-	}
-	defer dg.Close()
-
-	fmt.Println("Bot running...")
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	<-c
-
 }
 
-func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	// ignore bot messages
-	if m.Author.ID == s.State.User.ID {
-		return
+func init() {
+	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		if h, ok := commands.CommandHandlers[i.ApplicationCommandData().Name]; ok {
+			h(s, i)
+		}
+	})
+}
+
+func main() {
+	err := s.Open()
+	if err != nil {
+		log.Fatalf("Cannot open the session: %v", err)
 	}
-	// BOT can only view messages that mention it, or a DM.
-	switch {
-	case strings.Contains(m.Content, "hello"):
-		s.ChannelMessageSend(m.ChannelID, "hello!!")
-	case strings.Contains(m.Content, "bye"):
-		s.ChannelMessageSend(m.ChannelID, "bye!")
+
+	log.Println("Adding commands...")
+	registeredCommands := make([]*discordgo.ApplicationCommand, len(commands.Commands))
+	for i, v := range commands.Commands {
+		cmd, err := s.ApplicationCommandCreate(s.State.User.ID, guildID, v)
+		if err != nil {
+			log.Panicf("Cannot create '%v' command: %v", v.Name, err)
+		}
+		registeredCommands[i] = cmd
 	}
+
+	defer s.Close()
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt)
+	log.Println("Press Ctrl+C to exit")
+	<-stop
+
 }

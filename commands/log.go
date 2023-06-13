@@ -23,9 +23,8 @@ func handleLogCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: fmt.Sprintf(
-					"Option 1: %s\nOption 2: %s",
+					"Option 1: %s",
 					data.Options[0].StringValue(),
-					data.Options[1].StringValue(),
 				),
 			},
 		})
@@ -41,19 +40,31 @@ func handleLogCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			choices = []*discordgo.ApplicationCommandOptionChoice{
 				{
 					Name:  "Visual Novel",
-					Value: "visualnovel",
+					Value: "VN",
 				},
 				{
-					Name:  "Novel",
-					Value: "novel",
+					Name:  "Manga",
+					Value: "Manga",
 				},
 				{
 					Name:  "Anime",
-					Value: "anime",
+					Value: "Anime",
 				},
 				{
-					Name:  "Choice 5",
-					Value: "choice5",
+					Name:  "Book",
+					Value: "Book",
+				},
+				{
+					Name:  "Readtime",
+					Value: "Readtime",
+				},
+				{
+					Name:  "Listening",
+					Value: "Listening",
+				},
+				{
+					Name:  "Reading",
+					Value: "Reading",
 				},
 			}
 			if data.Options[0].StringValue() != "" {
@@ -62,42 +73,15 @@ func handleLogCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					Value: "choice_custom",
 				})
 			}
-
-		case data.Options[1].Focused:
-			choices = []*discordgo.ApplicationCommandOptionChoice{
-				{
-					Name:  "Autocomplete 4 second option",
-					Value: "autocomplete_1_default",
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionApplicationCommandAutocompleteResult,
+				Data: &discordgo.InteractionResponseData{
+					Choices: choices,
 				},
-				{
-					Name:  "Choice 3.1",
-					Value: "choice3_1",
-				},
-				{
-					Name:  "Choice 4.1",
-					Value: "choice4_1",
-				},
-				{
-					Name:  "Choice 5.1",
-					Value: "choice5_1",
-				},
+			})
+			if err != nil {
+				panic(err)
 			}
-			if data.Options[1].StringValue() != "" {
-				choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
-					Name:  data.Options[1].StringValue(),
-					Value: "choice_custom_2",
-				})
-			}
-		}
-
-		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionApplicationCommandAutocompleteResult,
-			Data: &discordgo.InteractionResponseData{
-				Choices: choices,
-			},
-		})
-		if err != nil {
-			panic(err)
 		}
 	}
 }

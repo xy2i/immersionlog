@@ -23,8 +23,9 @@ func handleLogCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: fmt.Sprintf(
-					"Option 1: %s",
+					"Option 1: %s for %s",
 					data.Options[0].StringValue(),
+					data.Options[1].StringValue(),
 				),
 			},
 		})
@@ -33,14 +34,20 @@ func handleLogCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	case discordgo.InteractionApplicationCommandAutocomplete:
 		data := i.ApplicationCommandData()
+		options := data.Options
+		for k, v := range options {
+			fmt.Printf("%s: %s\n", k, v.Name)
+		}
 		var choices []*discordgo.ApplicationCommandOptionChoice
 		switch {
 		// In this case there are multiple autocomplete options. The Focused field shows which option user is focused on.
+		// replace this by working with a map
+		//instead of array indexes.
 		case data.Options[0].Focused:
 			choices = []*discordgo.ApplicationCommandOptionChoice{
 				{
 					Name:  "Visual Novel",
-					Value: "VN",
+					Value: "Visual Novel",
 				},
 				{
 					Name:  "Manga",
@@ -67,21 +74,33 @@ func handleLogCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					Value: "Reading",
 				},
 			}
-			if data.Options[0].StringValue() != "" {
-				choices = append(choices, &discordgo.ApplicationCommandOptionChoice{
-					Name:  data.Options[0].StringValue(),
-					Value: "choice_custom",
-				})
+		case data.Options[2].Focused:
+			if data.Options[0].StringValue() == "Visual Novel" {
+				choices = []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "Visual Novel",
+						Value: "VN",
+					},
+				}
+			} else {
+				choices = []*discordgo.ApplicationCommandOptionChoice{
+					{
+						Name:  "Not a visual novel",
+						Value: "not",
+					},
+				}
 			}
-			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionApplicationCommandAutocompleteResult,
-				Data: &discordgo.InteractionResponseData{
-					Choices: choices,
-				},
-			})
-			if err != nil {
-				panic(err)
-			}
+
 		}
+		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionApplicationCommandAutocompleteResult,
+			Data: &discordgo.InteractionResponseData{
+				Choices: choices,
+			},
+		})
+		if err != nil {
+			panic(err)
+		}
+
 	}
 }

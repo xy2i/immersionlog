@@ -18,8 +18,23 @@ var (
 			Description: "You can use vndb Ids and titles for VN",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
+					// make this a choice, user can only pick one of the given ones.
 					Name:         "mediatype",
 					Description:  "mediatype",
+					Type:         discordgo.ApplicationCommandOptionString,
+					Required:     true,
+					Autocomplete: true,
+				},
+				{
+					Name:         "amount",
+					Description:  "how much time you have spent on this mediatype in HH:MM format or MM",
+					Type:         discordgo.ApplicationCommandOptionString,
+					Autocomplete: false,
+					Required:     true,
+				},
+				{
+					Name:         "name",
+					Description:  "You can use vndb ids and titles for VNs",
 					Type:         discordgo.ApplicationCommandOptionString,
 					Required:     true,
 					Autocomplete: true,
